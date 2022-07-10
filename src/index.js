@@ -1,17 +1,49 @@
-import React from 'react';
+import React, { memo, useState,  } from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+
+//side effect
+let lastDependencies
+function useEffect(callback,dependencies) {
+  if (!lastDependencies) {
+    lastDependencies = dependencies;
+    callback();
+   }
+  else {
+    let changed = !dependencies.every((item, idx) => item === lastDependencies[idx])
+    if (changed) {
+      lastDependencies = dependencies;
+      callback();
+    }
+  }
+ 
+}
+
+function App() {
+  console.log('App.Render');
+  
+  let [state, setState] = useState(10)
+  
+  useEffect(() => {
+    console.log(state);
+  },[state])
+  
+  return (
+    <>
+      {`num:${state}`}<br/>
+      <button onClick={() => { setState(state+1) }}>click</button>
+     
+  </>)
+}
+
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+
+function render() {
+  root.render(
+    <App/>
+   );
+}
+render()

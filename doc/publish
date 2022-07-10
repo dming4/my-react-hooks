@@ -1,0 +1,85 @@
+1:实现简版的 useState
+
+每次调用顺序索引必须一样
+返回初始状态变量，和更改状态方法
+调用更改状态方法，更新状态并重新渲染
+let lastStates = []
+let index;
+function useState(initValue) {
+  let state = lastStates[index] || initValue;
+  let currIndex = index;
+  let setState = (newState) => {
+    lastStates[currIndex] = newState;
+    render();
+  }
+  index++
+  return [state,setState]
+}
+
+
+2:实现简版的 useMemo
+如果有dependencies未变化，返回上次对象的值
+如果dependencies有变化，执行callback，返回新对象
+let lastMemo
+let lastMemoDependencies
+function useMemo(callback,dependencies) {
+  if (!lastMemo) {
+    lastMemo = callback();
+    lastMemoDependencies = dependencies;
+   }
+  else {
+    let changed = !dependencies.every((item, idx) => item === lastMemoDependencies[idx])
+    if (changed) {
+      lastMemo = callback();
+      lastMemoDependencies = dependencies;
+    }
+  }
+  return lastMemo;
+}
+
+3:实现简版的 useCallback
+如果有dependencies未变化，返回上次callback
+如果dependencies有变化，返回新的callback
+let lastCallback
+let lastCallbackDependencies
+function useCallback(callback,dependencies) {
+  if (!lastCallback) {
+    lastCallback = callback;
+    lastCallbackDependencies = dependencies;
+   }
+  else {
+    let changed = !dependencies.every((item, idx) => item === lastCallbackDependencies[idx])
+    if (changed) {
+      lastCallback = callback;
+      lastCallbackDependencies = dependencies;
+    }
+  }
+  return lastCallback;
+}
+
+4:实现简版的 useReducer
+传入reducer,
+返回状态和dispatch函数 
+
+let lastState
+function useReducer(reducer, initValue) {
+  lastState=lastState || initValue;
+  let dispatch = function (action) {
+    lastState= reducer(lastState, action);
+    render();
+  }
+  return [lastState,dispatch]
+}
+
+5:实现简版的 useContext
+共享变量
+
+let Context = React.createContext();
+function useContext(Context) {
+  console.log('Context',Context);
+  return Context._currentValue
+}
+此处Provider组件可以共享变量，useContext可以拿到对应的变量数据，在Counter组件中就可以使用useContext获取变量
+<Context.Provider value={{ state, setState }}>
+        <Counter></Counter>
+</Context.Provider>
