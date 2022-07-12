@@ -1,18 +1,6 @@
-import React, { memo,   useState,  } from 'react';
+useimport React, { memo,  useRef, useState,  } from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-
-//在浏览器渲染后执行,不会阻塞浏览器运行
-let lastRefDependencies
-function useRef(initValue) {
-  if (!lastRefDependencies) {
-      lastRefDependencies = lastRefDependencies||initValue;
-   }
-  return {
-    current:lastRefDependencies
-  }
- 
-}
 
 // side effect 
 //在浏览器渲染后执行,不会阻塞浏览器运行
@@ -80,7 +68,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 
 function Animation() {
   let ref = useRef();
-  useEffect(() => {
+  useLayoutEffect(() => {
     console.log('useEffect');
     
     ref.current.style.transform = 'translate(500px)'
