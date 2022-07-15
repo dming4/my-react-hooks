@@ -83,3 +83,84 @@ function useContext(Context) {
 <Context.Provider value={{ state, setState }}>
         <Counter></Counter>
 </Context.Provider>
+
+
+6:实现简版的 useEffect
+
+浏览器事件环：
+1）执行脚本代码（宏任务队列中取出）
+2）进入主执行栈，依次执行
+3）如遇到setTimeout,ajax,event, 把对应的回调放入宏任务队列, 宏任务队列在页面渲染之后执行
+4）如遇到Promise, 把对应的回调放入微任务队列, 在页面渲染之前执行，所以任务会阻碍页面的渲染
+5）显示器刷新率是60HZ, 每秒钟刷新60次, 也是就是16.67毫秒刷新一次
+
+
+
+//在浏览器渲染后执行,不会阻塞浏览器运行
+let lastDependencies
+function useEffect(callback,dependencies) {
+  if (!lastDependencies) {
+    lastDependencies = dependencies;
+    setTimeout(() => {
+      callback();
+    }, 0);
+   }
+  else {
+    let changed = !dependencies.every((item, idx) => item === lastDependencies[idx])
+    if (changed) {
+      lastDependencies = dependencies;
+      callback();
+    }
+  }
+}
+
+
+
+//在浏览器渲染前执行,会阻塞浏览器运行
+let lastLayOutDependencies
+function useLayoutEffect(callback,dependencies) {
+  if (!lastLayOutDependencies) {
+    lastLayOutDependencies = dependencies;
+    queueMicrotask(callback);
+    // Promise.resolve().then(callback)
+   }
+  else {
+    let changed = !dependencies.every((item, idx) => item === lastLayOutDependencies[idx])
+    if (changed) {
+      lastLayOutDependencies = dependencies;
+      queueMicrotask(callback);
+      // Promise.resolve().then(callback)
+    }
+  }
+}
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+    <script>
+        // display Hello World and then page stuck because the infinite loop
+        setTimeout(() => {
+            while (true) {}
+            console.log('setTimeout');
+            document.body.style.backgroundColor = '#ccc';
+        }, 0);
+        // no Hello World display and page stuck because the infinite loop
+        Promise.resolve().then(() => {
+            while (true) {}
+            console.log('Promise');
+        });
+    </script>
+
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        Hello World
+    </body>
+</html>
